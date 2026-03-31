@@ -1,0 +1,396 @@
+{
+  "questions": [
+    {
+      "id": "easy-mc-1",
+      "question": "What keyword defines a function?",
+      "type": "multiple_choice",
+      "options": ["func", "define", "def", "function"],
+      "answer": "def",
+      "category": "Python Basics",
+      "difficulty": "Easy"
+    },
+    {
+      "id": "easy-mc-2",
+      "question": "Which operator is used for exponentiation in Python?",
+      "type": "multiple_choice",
+      "options": ["^", "**", "//", "%"],
+      "answer": "**",
+      "category": "Python Basics",
+      "difficulty": "Easy"
+    },
+    {
+      "id": "easy-mc-3",
+      "question": "Which built-in type is an ordered, mutable collection?",
+      "type": "multiple_choice",
+      "options": ["tuple", "list", "set", "int"],
+      "answer": "list",
+      "category": "Data Structures",
+      "difficulty": "Easy"
+    },
+
+    {
+      "id": "easy-tf-1",
+      "question": "True or False: && functions the same as 'and' in python.",
+      "type": "true_false",
+      "answer": "false",
+      "category": "Python Basics",
+      "difficulty": "Easy"
+    },
+    {
+      "id": "easy-tf-2",
+      "question": "True or False: Indentation in Python is syntactically significant.",
+      "type": "true_false",
+      "answer": "true",
+      "category": "Python Basics",
+      "difficulty": "Easy"
+    },
+    {
+      "id": "easy-tf-3",
+      "question": "True or False: The expression 3 == 3 evaluates to True.",
+      "type": "true_false",
+      "answer": "true",
+      "category": "Python Basics",
+      "difficulty": "Easy"
+    },
+
+    {
+      "id": "easy-sa-1",
+      "question": "What built-in function returns the length of a string?",
+      "type": "short_answer",
+      "answer": "len",
+      "category": "Python Basics",
+      "difficulty": "Easy"
+    },
+    {
+      "id": "easy-sa-2",
+      "question": "What keyword is used to start a conditional block in Python (lowercase)?",
+      "type": "short_answer",
+      "answer": "if",
+      "category": "Python Basics",
+      "difficulty": "Easy"
+    },
+    {
+      "id": "easy-sa-3",
+      "question": "What is the boolean value for 'no' in Python (lowercase)?",
+      "type": "short_answer",
+      "answer": "false",
+      "category": "Python Basics",
+      "difficulty": "Easy"
+    },
+
+    {
+      "id": "med-mc-1",
+      "question": "What is the output of: print(type([]) == list)",
+      "type": "multiple_choice",
+      "options": ["True", "False", "list", "[]"],
+      "answer": "True",
+      "category": "Types",
+      "difficulty": "Medium"
+    },
+    {
+      "id": "med-mc-2",
+      "question": "Which method adds an element to the end of a Python list?",
+      "type": "multiple_choice",
+      "options": ["add", "append", "push", "extend"],
+      "answer": "append",
+      "category": "Data Structures",
+      "difficulty": "Medium"
+    },
+    {
+      "id": "med-mc-3",
+      "question": "Which keyword is used to handle exceptions?",
+      "type": "multiple_choice",
+      "options": ["except", "catch", "handle", "error"],
+      "answer": "except",
+      "category": "Exceptions",
+      "difficulty": "Medium"
+    },
+
+    {
+      "id": "med-tf-1",
+      "question": "A list in Python is immutable.",
+      "type": "true_false",
+      "answer": "false",
+      "category": "Data Structures",
+      "difficulty": "Medium"
+    },
+    {
+      "id": "med-tf-2",
+      "question": "True or False: Dictionaries in Python preserve insertion order (Python 3.7+).",
+      "type": "true_false",
+      "answer": "true",
+      "category": "Data Structures",
+      "difficulty": "Medium"
+    },
+    {
+      "id": "med-tf-3",
+      "question": "True or False: In Python, 'is' checks value equality.",
+      "type": "true_false",
+      "answer": "false",
+      "category": "Operators",
+      "difficulty": "Medium"
+    },
+
+    {
+      "id": "med-sa-1",
+      "question": "What built-in function returns an iterator of (index, value) pairs from a list?",
+      "type": "short_answer",
+      "answer": "enumerate",
+      "category": "Python Basics",
+      "difficulty": "Medium"
+    },
+    {
+      "id": "med-sa-2",
+      "question": "What is the keyword to define an anonymous function in Python?",
+      "type": "short_answer",
+      "answer": "lambda",
+      "category": "Functions",
+      "difficulty": "Medium"
+    },
+    {
+      "id": "med-sa-3",
+      "question": "What is the method name to get all keys from a dict? (camelCase not required; use Python method name)",
+      "type": "short_answer",
+      "answer": "keys",
+      "category": "Data Structures",
+      "difficulty": "Medium"
+    },
+
+    {
+      "id": "hard-mc-1",
+      "question": "What does list slicing a[1:3] return?",
+      "type": "multiple_choice",
+      "options": ["Elements at indices 1 and 2", "Elements at indices 1,2,3", "Elements at indices 0,1,2", "Only element at index 3"],
+      "answer": "Elements at indices 1 and 2",
+      "category": "Data Structures",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "hard-mc-2",
+      "question": "What is the output of: print('a' * 3)",
+      "type": "multiple_choice",
+      "options": ["a3", "aaa", "Error", "3a"],
+      "answer": "aaa",
+      "category": "Strings",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "hard-mc-3",
+      "question": "Which statement creates a generator expression?",
+      "type": "multiple_choice",
+      "options": ["[x for x in range(3)]", "(x for x in range(3))", "{x for x in range(3)}", "{x: x for x in range(3)}"],
+      "answer": "(x for x in range(3))",
+      "category": "Comprehensions",
+      "difficulty": "Hard"
+    },
+
+    {
+      "id": "hard-tf-1",
+      "question": "True or False: A function parameter with a default value must come after non-default parameters.",
+      "type": "true_false",
+      "answer": "true",
+      "category": "Functions",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "hard-tf-2",
+      "question": "True or False: In Python, recursion always uses constant memory.",
+      "type": "true_false",
+      "answer": "false",
+      "category": "Functions",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "hard-tf-3",
+      "question": "True or False: 'finally' in a try/except block runs even if an exception occurs.",
+      "type": "true_false",
+      "answer": "true",
+      "category": "Exceptions",
+      "difficulty": "Hard"
+    },
+
+    {
+      "id": "hard-sa-1",
+      "question": "What built-in exception is raised when you access a missing dict key?",
+      "type": "short_answer",
+      "answer": "KeyError",
+      "category": "Exceptions",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "hard-sa-2",
+      "question": "What keyword is used to create a context manager block? (lowercase)",
+      "type": "short_answer",
+      "answer": "with",
+      "category": "Context Managers",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "hard-sa-3",
+      "question": "What is the name of the special method for object initialization?",
+      "type": "short_answer",
+      "answer": "__init__",
+      "category": "OOP",
+      "difficulty": "Hard"
+    },
+
+    {
+      "id": "hard-two-part-1",
+      "question": "Two-part challenge (Hard):",
+      "type": "hard_two_part",
+      "category": "Execution",
+      "difficulty": "Hard",
+      "parts": [
+        {
+          "question": "Part 1: What is the output of: print(2 + 2 * 2)?",
+          "type": "short_answer",
+          "answer": "6"
+        },
+        {
+          "question": "Part 2: If we run: print(undefined_variable), what happens?",
+          "type": "multiple_choice",
+          "options": ["It prints 'undefined_variable'", "NameError", "TypeError", "It runs with no output"],
+          "answer": "NameError"
+        }
+      ]
+    },
+    {
+      "id": "hard-two-part-2",
+      "question": "Two-part challenge (Hard):",
+      "type": "hard_two_part",
+      "category": "Execution",
+      "difficulty": "Hard",
+      "parts": [
+        {
+          "question": "Part 1: What is the output of: print(len('abc'))?",
+          "type": "short_answer",
+          "answer": "3"
+        },
+        {
+          "question": "Part 2: If we run: int('3.14'), what happens?",
+          "type": "multiple_choice",
+          "options": ["It returns 3", "ValueError", "TypeError", "It returns 3.14"],
+          "answer": "ValueError"
+        }
+      ]
+    },
+    {
+      "id": "hard-two-part-3",
+      "question": "Two-part challenge (Hard):",
+      "type": "hard_two_part",
+      "category": "Execution",
+      "difficulty": "Hard",
+      "parts": [
+        {
+          "question": "Part 1: What is the output of: print('hi'.upper())?",
+          "type": "short_answer",
+          "answer": "HI"
+        },
+        {
+          "question": "Part 2: If we run: print(1/0), what happens?",
+          "type": "multiple_choice",
+          "options": ["0", "Infinity", "ZeroDivisionError", "SyntaxError"],
+          "answer": "ZeroDivisionError"
+        }
+      ]
+    },
+    {
+      "id": "hard-two-part-4",
+      "question": "Two-part challenge (Hard):",
+      "type": "hard_two_part",
+      "category": "Execution",
+      "difficulty": "Hard",
+      "parts": [
+        {
+          "question": "Part 1: What is the output of: print([1,2,3][0])?",
+          "type": "short_answer",
+          "answer": "1"
+        },
+        {
+          "question": "Part 2: If we run: print('a' + 1), what happens?",
+          "type": "multiple_choice",
+          "options": ["a1", "TypeError", "NameError", "It prints 1"],
+          "answer": "TypeError"
+        }
+      ]
+    },
+
+    {
+      "id": "chal-mc-1",
+      "question": "Challenge: What is the result of: [x*x for x in range(3)]",
+      "type": "multiple_choice",
+      "options": ["[1, 4, 9]", "[0, 1, 4]", "(0, 1, 4)", "[0, 1, 2]"],
+      "answer": "[0, 1, 4]",
+      "category": "Comprehensions",
+      "difficulty": "Challenge"
+    },
+    {
+      "id": "chal-mc-2",
+      "question": "Challenge: What does the walrus operator ':=' do?",
+      "type": "multiple_choice",
+      "options": ["Type annotation", "Assignment expression", "Bitwise shift", "Dictionary merge"],
+      "answer": "Assignment expression",
+      "category": "Python 3.8+",
+      "difficulty": "Challenge"
+    },
+    {
+      "id": "chal-mc-3",
+      "question": "Challenge: Given s = {'a', 'b'}, what is type(s)?",
+      "type": "multiple_choice",
+      "options": ["list", "dict", "set", "tuple"],
+      "answer": "set",
+      "category": "Types",
+      "difficulty": "Challenge"
+    },
+
+    {
+      "id": "chal-tf-1",
+      "question": "Challenge True/False: In Python, bool is a subclass of int.",
+      "type": "true_false",
+      "answer": "true",
+      "category": "Types",
+      "difficulty": "Challenge"
+    },
+    {
+      "id": "chal-tf-2",
+      "question": "Challenge True/False: A generator can be iterated multiple times without re-creating it.",
+      "type": "true_false",
+      "answer": "false",
+      "category": "Iterators",
+      "difficulty": "Challenge"
+    },
+    {
+      "id": "chal-tf-3",
+      "question": "Challenge True/False: 'staticmethod' receives an implicit first argument.",
+      "type": "true_false",
+      "answer": "false",
+      "category": "OOP",
+      "difficulty": "Challenge"
+    },
+
+    {
+      "id": "chal-sa-1",
+      "question": "Challenge short answer: What method is called when you use len(obj)?",
+      "type": "short_answer",
+      "answer": "__len__",
+      "category": "Dunder Methods",
+      "difficulty": "Challenge"
+    },
+    {
+      "id": "chal-sa-2",
+      "question": "Challenge short answer: What keyword is used to create a coroutine function?",
+      "type": "short_answer",
+      "answer": "async",
+      "category": "Async",
+      "difficulty": "Challenge"
+    },
+    {
+      "id": "chal-sa-3",
+      "question": "Challenge short answer: What exception is raised when an index is out of range for a list?",
+      "type": "short_answer",
+      "answer": "IndexError",
+      "category": "Exceptions",
+      "difficulty": "Challenge"
+    }
+  ]
+}
