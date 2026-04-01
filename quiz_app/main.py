@@ -1,16 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import json
 import os
-import random
-import sys
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List, Optional
 
 from .services.auth import AuthService, User
 from .services.feedback import FeedbackService
 from .services.history import HistoryService
-from .services.questions import Question, QuestionBank
+from .services.questions import QuestionBank
 
 
 APP_TITLE = "hw8 Quiz App"
@@ -52,11 +49,20 @@ def _run_quiz(
     # Per spec: 6 questions per session
     total_questions = 6
 
-    questions = bank.select_questions(
-        difficulty=difficulty,
-        count=total_questions,
-        user_feedback=feedback.get_user_feedback(user.username),
-    )
+    user_fb = feedback.get_user_feedback(user.username)
+
+    def shift_difficulty(cur: str, direction: str) -> str:
+        order = ["Easy", "Medium", "Hard", "Challenge"]
+        cur_norm = cur.lower()
+        order_norm = [d.lower() for d in order]
+        if cur_norm not in order_norm:
+            return cur
+        i = order_norm.index(cur_norm)
+        if direction == "up" and i + 1 < len(order):
+            return order[i + 1]
+        if direction == "down" and i - 1 >= 0:
+            return order[i - 1]
+        return cur
 
     print("\nAnswer format rules:")
     print("- Multiple choice: A/a, B/b, C/c, D/d")
@@ -67,7 +73,31 @@ def _run_quiz(
     print()
 
     correct = 0
-    for idx, q in enumerate(questions, start=1):
+    current_difficulty = difficulty
+    asked_ids: set[str] = set()
+    for idx in range(1, total_questions + 1):
+        # Select one question at a time so feedback can influence difficulty changes.
+        candidates = [
+            q
+            for q in bank.select_questions(
+                difficulty=current_difficulty,
+                count=20,
+                user_feedback=user_fb,
+            )
+            if q.id not in asked_ids
+        ]
+        if not candidates:
+            # Fallback: ignore asked_ids constraint.
+            candidates = bank.select_questions(
+                difficulty=current_difficulty,
+                count=1,
+                user_feedback=user_fb,
+            )
+        if not candidates:
+            print(f"Not enough questions available for difficulty '{current_difficulty}'.")
+            break
+        q = candidates[0]
+        asked_ids.add(q.id)
         print(f"Question {idx}/{total_questions} ({q.type}, {q.category}):")
         is_correct = q.ask_and_grade()
         if is_correct:
@@ -79,6 +109,13 @@ def _run_quiz(
         fb = _prompt_feedback()
         if fb is not None:
             feedback.record_feedback(user.username, q.id, fb)
+            user_fb[q.id] = fb
+
+            # Per spec: too hard/too easy shifts difficulty if possible.
+            if fb == "too hard":
+                current_difficulty = shift_difficulty(current_difficulty, "down")
+            elif fb == "too easy":
+                current_difficulty = shift_difficulty(current_difficulty, "up")
 
         print()
 
@@ -115,7 +152,8 @@ def main() -> None:
     history = HistoryService(history_path)
     feedback = FeedbackService(feedback_path)
 
-    user = auth.login_flow()
+    user, password = auth.login_flow()
+    history.set_password(user.username, password)
 
     # challenge mode is unlocked only after perfect 6/6 on hard
     unlocked = history.get_unlocked_difficulties(user.username)

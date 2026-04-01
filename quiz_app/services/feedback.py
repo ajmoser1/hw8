@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import os
+import base64
+import tempfile
 from typing import Dict
 
 
@@ -32,15 +34,42 @@ class FeedbackService:
             return {}
         try:
             with open(self.feedback_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            return data if isinstance(data, dict) else {}
+                wrapper = json.load(f)
+
+            # New format: {"_encoded": true, "payload": "..."}
+            if isinstance(wrapper, dict) and wrapper.get("_encoded") is True:
+                payload = wrapper.get("payload")
+                if isinstance(payload, str):
+                    raw = base64.b64decode(payload.encode("utf-8"))
+                    data = json.loads(raw.decode("utf-8"))
+                    return data if isinstance(data, dict) else {}
+
+            # Legacy format: plain JSON dict
+            return wrapper if isinstance(wrapper, dict) else {}
         except (OSError, json.JSONDecodeError):
+            return {}
+        except Exception:
             return {}
 
     def _save(self) -> None:
         try:
             os.makedirs(os.path.dirname(self.feedback_path), exist_ok=True)
-            with open(self.feedback_path, "w", encoding="utf-8") as f:
-                json.dump(self._data, f, indent=2)
+            raw = json.dumps(self._data, separators=(",", ":")).encode("utf-8")
+            wrapper = {
+                "_encoded": True,
+                "payload": base64.b64encode(raw).decode("utf-8"),
+            }
+
+            # Atomic write: write temp file then replace.
+            dirpath = os.path.dirname(self.feedback_path)
+            with tempfile.NamedTemporaryFile(
+                "w",
+                encoding="utf-8",
+                dir=dirpath,
+                delete=False,
+            ) as tf:
+                json.dump(wrapper, tf, indent=2)
+                tmp_name = tf.name
+            os.replace(tmp_name, self.feedback_path)
         except OSError:
             return

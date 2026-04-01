@@ -6,6 +6,9 @@ import hashlib
 import hmac
 import json
 import os
+import sys
+import getpass
+import tempfile
 from typing import Dict, Optional
 
 
@@ -25,7 +28,7 @@ class AuthService:
         self.users_path = users_path
         self._users = self._load_users()
 
-    def login_flow(self) -> User:
+    def login_flow(self) -> tuple[User, str]:
         while True:
             print("Login")
             print("1) Login")
@@ -40,7 +43,12 @@ class AuthService:
                 print("Username cannot be empty.\n")
                 continue
 
-            password = input("Password: ").strip()
+            # Prefer non-echoing password input.
+            # Fallback to normal input when stdin isn't interactive.
+            if sys.stdin is not None and hasattr(sys.stdin, "isatty") and sys.stdin.isatty():
+                password = getpass.getpass("Password: ").strip()
+            else:
+                password = input("Password: ").strip()
             if not password:
                 print("Password cannot be empty.\n")
                 continue
@@ -52,7 +60,7 @@ class AuthService:
                 self._users[username] = self._hash_password(password)
                 self._save_users()
                 print("Account created.\n")
-                return User(username=username)
+                return User(username=username), password
 
             # choice == "1"
             if username not in self._users:
@@ -63,7 +71,7 @@ class AuthService:
                 continue
 
             print("Login successful.\n")
-            return User(username=username)
+            return User(username=username), password
 
     def _load_users(self) -> Dict[str, str]:
         if not os.path.exists(self.users_path):
@@ -77,13 +85,25 @@ class AuthService:
             return users if isinstance(users, dict) else {}
         except (OSError, json.JSONDecodeError):
             # Spec emphasizes robust behavior; corrupted file => start fresh
+            print(
+                f"Warning: couldn't read user database at {self.users_path}. Starting with no users.",
+                file=sys.stderr,
+            )
             return {}
 
     def _save_users(self) -> None:
         os.makedirs(os.path.dirname(self.users_path), exist_ok=True)
         tmp = {"users": self._users}
-        with open(self.users_path, "w", encoding="utf-8") as f:
-            json.dump(tmp, f, indent=2)
+        dirpath = os.path.dirname(self.users_path)
+        with tempfile.NamedTemporaryFile(
+            "w",
+            encoding="utf-8",
+            dir=dirpath,
+            delete=False,
+        ) as tf:
+            json.dump(tmp, tf, indent=2)
+            tmp_name = tf.name
+        os.replace(tmp_name, self.users_path)
 
     @staticmethod
     def _hash_password(password: str) -> str:
