@@ -1,6 +1,7 @@
 {
   "users": {
     "testuser": "pbkdf2_sha256$200000$KYPXwm3w111dcDDHvpqLvQ==$IR6viG9N11O6/4CadLXI1rheiYp/+T9tIRzWjvXjGPU=",
-    "testuser2": "pbkdf2_sha256$200000$HIrRBAU8JdHBfhWdXBULUw==$fHOWEO+lzLJ5W66iFCfGdioUqHDUSpE9oe6R5U2fhNM="
+    "testuser2": "pbkdf2_sha256$200000$HIrRBAU8JdHBfhWdXBULUw==$fHOWEO+lzLJ5W66iFCfGdioUqHDUSpE9oe6R5U2fhNM=",
+    "Alex": "pbkdf2_sha256$200000$HbWsuqw7eyd0V9uMA5XntA==$wFp+5siMwyVXfaSAIMLNqpi3bXH210jEwTGc4l1L95k="
   }
 }

@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 import os
 from typing import List, Optional
+import random
+
 
 from .services.auth import AuthService, User
 from .services.feedback import FeedbackService
@@ -75,28 +77,45 @@ def _run_quiz(
     correct = 0
     current_difficulty = difficulty
     asked_ids: set[str] = set()
-    for idx in range(1, total_questions + 1):
-        # Select one question at a time so feedback can influence difficulty changes.
-        candidates = [
+
+    def pick_one_question(difficulty_name: str):
+        # Build a pool without repeats.
+        eligible = [
             q
-            for q in bank.select_questions(
-                difficulty=current_difficulty,
-                count=20,
-                user_feedback=user_fb,
-            )
-            if q.id not in asked_ids
+            for q in bank.questions
+            if q.difficulty.lower() == difficulty_name.lower() and q.id not in asked_ids
         ]
-        if not candidates:
-            # Fallback: ignore asked_ids constraint.
-            candidates = bank.select_questions(
-                difficulty=current_difficulty,
-                count=1,
-                user_feedback=user_fb,
+        if not eligible:
+            return None
+
+        # Prefer the bank's weighting behavior by asking it to rank/sample from this difficulty.
+        # Since QuestionBank.select_questions() can only operate on the full bank, we implement
+        # a simple weight-based pick here using the same feedback rules.
+        def weight(q) -> float:
+            fb = user_fb.get(q.id)
+            if fb == "like":
+                return 2.0
+            if fb == "dislike":
+                return 0.2
+            if fb in {"too easy", "too hard"}:
+                return 0.5
+            return 1.0
+
+        total_w = sum(weight(q) for q in eligible)
+        r = random.random() * total_w
+        upto = 0.0
+        for q in eligible:
+            upto += weight(q)
+            if upto >= r:
+                return q
+        return eligible[-1]
+
+    for idx in range(1, total_questions + 1):
+        q = pick_one_question(current_difficulty)
+        if q is None:
+            raise SystemExit(
+                f"Not enough unique questions available for difficulty '{current_difficulty}' to complete a {total_questions}-question session."
             )
-        if not candidates:
-            print(f"Not enough questions available for difficulty '{current_difficulty}'.")
-            break
-        q = candidates[0]
         asked_ids.add(q.id)
         print(f"Question {idx}/{total_questions} ({q.type}, {q.category}):")
         is_correct = q.ask_and_grade()

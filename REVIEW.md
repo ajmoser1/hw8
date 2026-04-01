@@ -14,10 +14,9 @@ Below are findings mapped to the acceptance criteria in `SPEC.md`, plus addition
    - `quiz_app/services/questions.py` lines 100–132: `QuestionBank.from_file()` loads `questions.json`.
    - `quiz_app/data/questions.json` is plain JSON and easy to edit.
 
-4. **[FAIL] Spec’s example JSON format doesn’t match what the parser actually requires (mandatory `id`).**
-   - Spec example in `SPEC.md` shows question objects without an `id` field.
-   - `quiz_app/services/questions.py` lines 190–198: `_parse_question()` requires `item["id"]` and returns `None` on any missing keys.
-   - Consequence: a user following the spec example verbatim would silently drop questions (and potentially end up with too few questions).
+4. **[PASS] Spec’s example JSON format works (question `id` is optional).**
+    - `quiz_app/services/questions.py`: `_parse_question()` generates a stable fallback ID when `id` is missing.
+    - Invalid question objects no longer fail silently during load (the app exits with a clear error listing invalid entries).
 
 5. **[PASS] Supports 3 question types (true/false, multiple choice, short answer).**
    - `quiz_app/services/questions.py` lines 45–77 (`Question.ask_and_grade`) and 125–178 (`_grade_single`).
@@ -39,87 +38,70 @@ Below are findings mapped to the acceptance criteria in `SPEC.md`, plus addition
    - Password hashing: `quiz_app/services/auth.py` lines 97–103 uses PBKDF2-HMAC-SHA256 with per-user salt (200k iterations).
    - Constant-time compare: `quiz_app/services/auth.py` lines 117–118 uses `hmac.compare_digest`.
 
-10. **[WARN] Password entry is echoed to the console (should ideally use `getpass`).**
-    - `quiz_app/services/auth.py` line 45 uses `input("Password: ")`, which echoes typed passwords.
-    - Not explicitly forbidden by spec, but it’s a common security/usability issue for CLI auth.
+10. **[PASS] Password entry is not echoed (uses `getpass`).**
+    - `quiz_app/services/auth.py`: password entry uses `getpass.getpass()` when running interactively.
 
 11. **[PASS] Score history is persisted in a non-human-readable format and can track per-user sessions.**
-    - Storage: `quiz_app/services/history.py` lines 1–112.
-    - `HistoryService._save()` (lines 87–97) XOR-obfuscates JSON and base64-encodes it; not readable at a glance.
-    - Tracks per-user `sessions`: `record_session()` lines 24–31.
+    - Storage: `quiz_app/services/history.py`.
+    - Data is encrypted (Fernet) and stored as opaque bytes; not human-readable at a glance.
+    - Tracks per-user `sessions`: `record_session()`.
 
-12. **[WARN] History “security” is obfuscation, not cryptography; `.key` sitting next to data defeats most secrecy.**
-    - `quiz_app/services/history.py` lines 9–17, 56–70 store the XOR key at `history.dat.key`.
-    - Anyone with access to both files can decode scores.
-    - This may still be within spec’s “relatively secure / not human readable,” but it’s worth calling out.
+12. **[PASS] History storage does not rely on a co-located key file.**
+    - `quiz_app/services/history.py`: history is encrypted (Fernet) with a key derived at login.
+    - No `.key` file is required next to `history.dat`.
 
-13. **[FAIL] Spec: “someone could look at the file and perhaps find out usernames but not passwords or scores.” Current design allows recovering scores if `.key` is present.**
-    - `quiz_app/services/history.py` lines 56–70 + 75–85: key is written to disk alongside the history.
-    - If an attacker can read the history file, they can almost certainly read the key file too.
+13. **[PASS] Spec’s intent met: scores are not recoverable from the history file alone.**
+    - `quiz_app/services/history.py`: history is encrypted and not readable without the login-derived key.
 
 14. **[PASS] Users can provide per-question feedback (like/dislike/too hard/too easy).**
     - Prompt + validation: `quiz_app/main.py` lines 113–127.
     - Persistence: `quiz_app/services/feedback.py` lines 21–25.
 
-15. **[WARN] Feedback influences selection only via weighting within the *same* chosen difficulty; “too hard/too easy will decrease/increase the difficulty if possible” isn’t implemented.**
-    - `quiz_app/services/questions.py` lines 142–162: weights adjust likelihood.
-    - The comment (lines 152–156) says difficulty changes are “handled by caller,” but `quiz_app/main.py` never adjusts difficulty based on feedback.
+15. **[PASS] “Too hard/too easy” feedback adjusts difficulty when possible.**
+    - `quiz_app/main.py`: after feedback is recorded, the next question’s difficulty shifts down/up when possible.
 
 16. **[PASS] Exactly 6 questions per session.**
     - `quiz_app/main.py` line 65 sets `total_questions = 6`.
 
-17. **[WARN] Spec: “Each difficulty should contain 9 questions, 3 of each type.” The code doesn’t validate this invariant.**
-    - There’s no check in `QuestionBank.from_file()` or elsewhere.
-    - Missing/invalid questions are silently ignored by `_parse_question()` (see finding #20), so you might accidentally violate the 9-question rule without noticing.
+17. **[PASS] Question bank invariants are validated on load (9 per difficulty; 3 per type).**
+    - `quiz_app/services/questions.py`: `QuestionBank.from_file()` validates that each difficulty contains exactly 3 MC, 3 TF, and 3 SA questions.
 
 18. **[PASS] Challenge mode difficulty is gated behind a perfect hard score (6/6).**
     - Unlock check: `quiz_app/main.py` lines 156–159.
     - Availability: `quiz_app/main.py` lines 142–147 reads unlocked difficulties and only adds `Challenge` to the menu when unlocked.
 
-19. **[FAIL] Spec: “Hard difficulty has 4 questions with two parts.” The app will ask 6 questions total from hard; two-part questions count as one question.**
-    - Question bank contains 4 two-part entries (`hard-two-part-1`..`4`), but they are `type: hard_two_part` and difficulty `Hard`.
-    - `quiz_app/main.py` line 65 always uses `total_questions = 6` even for Hard.
-    - `Question.ask_and_grade()` treats a two-part as one prompt sequence; so 6 “questions” could include any mix of single and two-part.
-    - If the spec intended that **Hard sessions are exactly those 4 two-part questions** (possibly totaling 8 parts), the current behavior doesn’t enforce that.
+19. **[PASS] Hard difficulty enforces inclusion of the 4 two-part questions.**
+    - `quiz_app/services/questions.py`: Hard sessions are selected as 4 two-part questions plus 2 additional Hard questions (still 6 questions total per session).
 
-20. **[WARN] Invalid question objects are silently dropped; this can cause short quizzes without explanation.**
-    - `_parse_question()` returns `None` in many cases (e.g., wrong options length, unknown type, missing keys): `quiz_app/services/questions.py` lines 188–249.
-    - `QuestionBank.from_file()` simply skips (`if q: questions.append(q)`) at lines 125–128.
+20. **[PASS] Invalid question objects are not silently dropped.**
+    - `quiz_app/services/questions.py`: invalid question objects cause a clear error during load listing which entries are invalid.
 
-21. **[WARN] Selecting questions: if insufficient eligible questions exist, the app returns fewer than requested without warning.**
-    - `quiz_app/services/questions.py` lines 145–149 returns `eligible[:count]` even if `len(eligible) < count`.
-    - Result: `quiz_app/main.py` still prints `Question i/6` but may ask fewer than 6 total.
+21. **[PASS] Question selection guarantees exactly 6 questions per session (or fails fast).**
+    - `quiz_app/services/questions.py`: selection raises an error if the bank doesn’t contain enough eligible questions.
 
-22. **[WARN] Multiple-choice grading compares the chosen option string to the stored answer string; answers like “True”/“False” vs casing are fine in JSON, but any extra whitespace/casing mismatch in MC answers will mark wrong.**
-    - `quiz_app/services/questions.py` lines 154–156: `chosen == q.answer` exact match.
-    - This is OK if the JSON is curated, but it’s brittle for hand-editing.
+22. **[PASS] Multiple-choice grading is robust to whitespace/casing.**
+    - `quiz_app/services/questions.py`: multiple-choice answers are normalized before comparison.
 
 23. **[PASS] True/False answers are normalized (t/true => true, f/false => false).**
     - `quiz_app/services/questions.py` lines 160–170.
 
-24. **[WARN] Login/user data error handling: corrupted `users.json` resets to empty silently.**
-    - `quiz_app/services/auth.py` lines 82–84: returns `{}` on errors.
-    - This is resilient, but could surprise users by “losing” accounts instead of warning.
+24. **[PASS] Corrupted `users.json` is handled robustly with a warning.**
+    - `quiz_app/services/auth.py`: corrupted/invalid `users.json` results in an empty user set with a warning printed to stderr.
 
-25. **[WARN] Feedback store is plain JSON and may reveal user preferences; no integrity/locking.**
-    - `quiz_app/services/feedback.py` lines 39–55.
-    - Not prohibited by spec, but it’s user data in cleartext.
+25. **[PASS] Feedback persistence is safer and less trivially readable.**
+    - `quiz_app/services/feedback.py`: feedback is stored as an encoded payload and written atomically.
 
-26. **[WARN] File writes aren’t atomic (risk of truncated/corrupted files on crash).**
-    - `quiz_app/services/auth.py` line 92 writes directly to `users.json`.
-    - `quiz_app/services/feedback.py` lines 49–52 writes directly to `feedback.json`.
-    - `quiz_app/services/history.py` lines 94–96 writes directly to `history.dat`.
+26. **[PASS] File writes are atomic for user/feedback/history stores.**
+    - `quiz_app/services/auth.py`, `quiz_app/services/feedback.py`, `quiz_app/services/history.py`: writes use temp files + replace.
 
 27. **[PASS] Basic “CTRL-D / EOF” handling while answering questions exits cleanly.**
     - `quiz_app/services/questions.py` lines 135–140 catches `EOFError` and exits.
 
-28. **[WARN] Code quality: some unused imports and minor style issues.**
-    - `quiz_app/main.py` imports `json`, `random`, `sys`, and several typing symbols not used (lines 4–10).
-    - Not a functional error, but reduces clarity.
+28. **[PASS] Code quality: unused imports cleaned up.**
+    - `quiz_app/main.py`: removed unused imports.
 
-29. **[WARN] Code organization: `Question.type` uses strings instead of an Enum; typos in JSON can silently drop questions.**
-    - `quiz_app/services/questions.py` lines 20–33 and 236–238.
-    - Combined with silent drop (#20), debugging data issues becomes harder.
+29. **[PASS] Question type values are validated (Enum-backed).**
+    - `quiz_app/services/questions.py`: question type strings are validated against a `QuestionType` Enum during parsing.
 
 30. **[PASS] No obvious path traversal or unsafe file path handling.**
     - All file paths are built from `__file__` directory (`quiz_app/main.py` lines 131–138) and not from user input.
